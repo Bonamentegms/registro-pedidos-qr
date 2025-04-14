@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Panel de Pedidos</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 2em; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1em; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background-color: #f4f4f4; }
+    input, select, button { margin: 0.5em; padding: 0.3em; }
+  </style>
+</head>
+<body>
+  <h2>📋 Pedidos Registrados</h2>
+
+  <div>
+    <label>Desde: <input type="date" id="filtroDesde"></label>
+    <label>Hasta: <input type="date" id="filtroHasta"></label>
+    <label>Cédula: <input type="text" id="filtroCedula"></label>
+    <label>Producto:
+      <select id="filtroProducto">
+        <option value="">Todos</option>
+        <option value="Almuerzo especial empleado">Almuerzo especial empleado</option>
+        <option value="Bandeja especial empleado">Bandeja especial empleado</option>
+        <option value="Almuerzo empleado">Almuerzo empleado</option>
+        <option value="Bandeja empleado">Bandeja empleado</option>
+        <option value="Desayuno empleado">Desayuno empleado</option>
+        <option value="Cena empleado">Cena empleado</option>
+      </select>
+    </label>
+    <label>Entregado:
+      <select id="filtroEntregado">
+        <option value="">Todos</option>
+        <option value="true">Sí</option>
+        <option value="false">No</option>
+      </select>
+    </label>
+    <button onclick="filtrar()">🔍 Filtrar</button>
+    <button onclick="descargarExcel()">⬇️ Descargar Excel</button>
+  </div>
+
+  <table id="tabla">
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Nombre</th>
+        <th>Cédula</th>
+        <th>Producto</th>
+        <th>Precio</th>
+        <th>Entregado</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    let pedidos = [];
+
+    function cargarDatos() {
+      fetch('/api/pedidos')
+        .then(res => res.json())
+        .then(data => {
+          pedidos = data;
+          mostrar(pedidos);
+        })
+        .catch(err => console.error("Error:", err));
+    }
+
+    function mostrar(lista) {
+      const cuerpo = document.querySelector('#tabla tbody');
+      cuerpo.innerHTML = '';
+      lista.forEach(p => {
+        const fila = `
+          <tr>
+            <td>${new Date(p.fecha).toLocaleString()}</td>
+            <td>${p.nombre}</td>
+            <td>${p.cedula}</td>
+            <td>${p.producto}</td>
+            <td>$${p.precio}</td>
+            <td>${p.entregado ? "✅" : "❌"}</td>
+          </tr>`;
+        cuerpo.innerHTML += fila;
+      });
+    }
+
+    function filtrar() {
+      const cedula = document.getElementById('filtroCedula').value.trim();
+      const entregado = document.getElementById('filtroEntregado').value;
+      const producto = document.getElementById('filtroProducto').value;
+      const desde = document.getElementById('filtroDesde').value;
+      const hasta = document.getElementById('filtroHasta').value;
+
+      const filtrados = pedidos.filter(p => {
+        const fechaPedido = new Date(p.fecha);
+        return (!cedula || p.cedula.includes(cedula)) &&
+               (!producto || p.producto === producto) &&
+               (entregado === "" || String(p.entregado) === entregado) &&
+               (!desde || fechaPedido >= new Date(desde)) &&
+               (!hasta || fechaPedido <= new Date(hasta + 'T23:59:59'));
+      });
+
+      mostrar(filtrados);
+    }
+
+    function descargarExcel() {
+      const cedula = document.getElementById('filtroCedula').value.trim();
+      const entregado = document.getElementById('filtroEntregado').value;
+      const producto = document.getElementById('filtroProducto').value;
+      const desde = document.getElementById('filtroDesde').value;
+      const hasta = document.getElementById('filtroHasta').value;
+
+      let url = '/api/pedidos/exportar?';
+      if (cedula) url += `cedula=${encodeURIComponent(cedula)}&`;
+      if (entregado) url += `entregado=${encodeURIComponent(entregado)}&`;
+      if (producto) url += `producto=${encodeURIComponent(producto)}&`;
+      if (desde) url += `desde=${encodeURIComponent(desde)}&`;
+      if (hasta) url += `hasta=${encodeURIComponent(hasta)}&`;
+
+      window.location.href = url;
+    }
+
+    window.onload = cargarDatos;
+  </script>
+</body>
+</html>

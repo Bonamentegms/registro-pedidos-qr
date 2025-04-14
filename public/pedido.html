@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Detalle del Pedido</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 2em; }
+    canvas { margin-top: 1em; }
+    button { padding: 0.5em 1em; margin-top: 1em; font-size: 16px; }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
+</head>
+<body>
+  <h2>📦 Pedido Registrado</h2>
+  <div id="info">Cargando...</div>
+  <div id="acciones"></div>
+  <canvas id="qr"></canvas>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const cedula = params.get("cedula");
+
+    if (!cedula) {
+      document.getElementById("info").textContent = "❌ Cédula no especificada.";
+    } else {
+      fetch(`/api/pedido/${cedula}`)
+        .then(res => res.json())
+        .then(data => {
+          if (!data || !data.nombre) {
+            document.getElementById("info").textContent = "❌ Pedido no encontrado.";
+            return;
+          }
+
+          document.getElementById("info").innerHTML = `
+            <p><strong>Nombre:</strong> ${data.nombre}</p>
+            <p><strong>Cédula:</strong> ${data.cedula}</p>
+            <p><strong>Producto:</strong> ${data.producto}</p>
+            <p><strong>Precio:</strong> $${data.precio}</p>
+            <p><strong>Fecha:</strong> ${new Date(data.fecha).toLocaleString()}</p>
+            <p><strong>Entregado:</strong> ${data.entregado ? "✅ Sí" : "❌ No"}</p>
+          `;
+
+          if (!data.entregado) {
+            document.getElementById("acciones").innerHTML = `
+              <button onclick="marcarEntregado()">✅ Marcar como Entregado</button>
+            `;
+          }
+
+          new QRious({
+            element: document.getElementById("qr"),
+            value: window.location.href,
+            size: 200
+          });
+        })
+        .catch(err => {
+          console.error("Error:", err);
+          document.getElementById("info").textContent = "❌ Error al cargar el pedido.";
+        });
+    }
+
+    function marcarEntregado() {
+      if (!cedula) return;
+
+      fetch(`/api/pedido/${cedula}/entregar`)
+        .then(res => {
+          if (res.ok) {
+            alert("✅ Pedido marcado como entregado");
+            location.reload();
+          } else {
+            alert("⚠️ No se pudo actualizar el pedido");
+          }
+        })
+        .catch(err => {
+          console.error("Error:", err);
+          alert("❌ Error al marcar como entregado");
+        });
+    }
+  </script>
+</body>
+</html>

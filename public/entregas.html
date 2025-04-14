@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Entregas del Día</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 2em; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1em; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background-color: #f4f4f4; }
+    button { padding: 0.3em 0.8em; }
+  </style>
+</head>
+<body>
+  <h2>📦 Pedidos del Día</h2>
+  <table id="tabla">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Cédula</th>
+        <th>Producto</th>
+        <th>Precio</th>
+        <th>Hora</th>
+        <th>Entregado</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    async function cargarPedidos() {
+      const res = await fetch('/api/pedidos');
+      const data = await res.json();
+      const hoy = new Date().toLocaleDateString();
+
+      const pedidosHoy = data.filter(p => {
+        const fecha = new Date(p.fecha).toLocaleDateString();
+        return fecha === hoy;
+      });
+
+      const tbody = document.querySelector('#tabla tbody');
+      tbody.innerHTML = '';
+
+      pedidosHoy.forEach(p => {
+        const fila = document.createElement('tr');
+        fila.innerHTML = `
+          <td>${p.nombre}</td>
+          <td>${p.cedula}</td>
+          <td>${p.producto}</td>
+          <td>$${p.precio}</td>
+          <td>${new Date(p.fecha).toLocaleTimeString()}</td>
+          <td>${p.entregado ? "✅" : "❌"}</td>
+          <td>
+            ${!p.entregado ? `<button onclick="entregar('${p.cedula}')">Entregar</button>` : ""}
+          </td>
+        `;
+        tbody.appendChild(fila);
+      });
+    }
+
+    async function entregar(cedula) {
+      if (confirm("¿Marcar como entregado?")) {
+        await fetch(`/api/pedido/${cedula}/entregar`);
+        cargarPedidos();
+      }
+    }
+
+    window.onload = cargarPedidos;
+  </script>
+</body>
+</html>
