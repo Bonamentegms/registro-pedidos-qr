@@ -100,7 +100,6 @@
       margin-top: 1em;
     }
 
-    /* Modal */
     .modal {
       display: none;
       position: fixed;
@@ -159,7 +158,6 @@
     </div>
   </div>
 
-  <!-- Modal para mostrar imagen ampliada -->
   <div class="modal" id="modal">
     <img id="modal-img" src="" alt="Menú ampliado" />
   </div>
@@ -169,7 +167,9 @@
     const modal = document.getElementById("modal");
     const modalImg = document.getElementById("modal-img");
 
-    menuImg.src = "https://b75b-186-114-65-91.ngrok-free.app/uploads/menu.jpg";
+    // ⚠️ Forzar actualización usando timestamp para evitar caché
+    const timestamp = new Date().getTime();
+    menuImg.src = `https://b75b-186-114-65-91.ngrok-free.app/uploads/menu.jpg?t=${timestamp}`;
 
     function mostrarMensajeError() {
       document.getElementById("imagen-error").style.display = "block";
