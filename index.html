@@ -123,26 +123,30 @@
   </div>
 
   <script>
-    fetch("https://b75b-186-114-65-91.ngrok-free.app/api/menu")
-      .then(res => {
-        const contentType = res.headers.get("content-type") || "";
-        if (!res.ok || !contentType.includes("application/json")) {
-          throw new Error("Respuesta no válida o no es JSON");
-        }
-        return res.json();
-      })
-      .then(data => {
-        const div = document.getElementById("menu-dia");
-        if (data && data.menu) {
-          div.textContent = data.menu;
-        } else {
-          div.textContent = "⚠️ No se ha establecido un menú para hoy.";
-        }
-      })
-      .catch(err => {
-        console.error("❌ Error al cargar el menú:", err);
-        document.getElementById("menu-dia").textContent = "⚠️ Error al cargar el menú.";
-      });
+    function cargarMenu() {
+      fetch("https://b75b-186-114-65-91.ngrok-free.app/proxy/menu")
+        .then(res => {
+          const contentType = res.headers.get("content-type") || "";
+          if (!res.ok || !contentType.includes("application/json")) {
+            throw new Error("Respuesta no válida o no es JSON");
+          }
+          return res.json();
+        })
+        .then(data => {
+          const div = document.getElementById("menu-dia");
+          if (data && data.menu) {
+            div.textContent = data.menu;
+          } else {
+            div.textContent = "⚠️ No se ha establecido un menú para hoy.";
+          }
+        })
+        .catch(err => {
+          console.error("❌ Error al cargar el menú:", err);
+          document.getElementById("menu-dia").textContent = "⚠️ Error al cargar el menú.";
+        });
+    }
+
+    cargarMenu(); // Ejecutar al cargar la página
   </script>
 </body>
 </html>
