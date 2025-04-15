@@ -78,15 +78,10 @@
       background-color: #0056b3;
     }
 
-    #menu-dia {
-      font-size: 15px;
-      white-space: pre-wrap;
-      color: #333;
-      background: #f9f9f9;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 1em;
-      min-height: 200px;
+    #menu-img {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid #ccc;
     }
   </style>
 </head>
@@ -94,7 +89,8 @@
   <div class="container">
     <div class="menu-container">
       <h2>📋 Menú del Día</h2>
-      <div id="menu-dia">Cargando menú del día...</div>
+      <!-- 🔁 Imagen del menú cargada desde el backend -->
+      <img id="menu-img" src="https://b75b-186-114-65-91.ngrok-free.app/uploads/menu.jpg" alt="Menú del día" onerror="this.style.display='none'">
     </div>
 
     <div class="form-container">
@@ -121,22 +117,5 @@
       </form>
     </div>
   </div>
-
-  <!-- ✅ Script usando fetch para obtener menú del backend -->
-  <script>
-    fetch("https://b75b-186-114-65-91.ngrok-free.app/api/menu")
-      .then(res => {
-        if (!res.ok) throw new Error("Error de respuesta");
-        return res.json();
-      })
-      .then(data => {
-        document.getElementById("menu-dia").textContent =
-          data.menu || "⚠️ No se ha establecido un menú para hoy.";
-      })
-      .catch(err => {
-        console.error("❌ Error al cargar el menú:", err);
-        document.getElementById("menu-dia").textContent = "⚠️ Error al cargar el menú.";
-      });
-  </script>
 </body>
 </html>
