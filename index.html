@@ -1,152 +1,208 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <title>Formulario de Pedido</title>
-  <style>
-    body {
-      background: #f5f7fa;
-      font-family: 'Segoe UI', sans-serif;
-      height: 100vh;
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+const express = require('express');
+const bodyParser = require('body-parser');
+const { Pool } = require('pg');
+const ExcelJS = require('exceljs');
+const cors = require('cors');
+require('dotenv').config();
+const path = require('path');
+
+const app = express();
+const port = 3000;
+
+// Conexión a PostgreSQL
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL
+});
+
+// CORS para GitHub Pages
+app.use(cors({
+  origin: 'https://bonamentegms.github.io',
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type']
+}));
+
+app.options('*', cors());
+
+// Middlewares
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Variable global del menú
+global.menuDelDia = '';
+
+// Rutas de páginas estáticas
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'src', 'form.html'));
+});
+
+app.get('/entregas.html', (req, res) => res.sendFile(path.join(__dirname, 'src', 'entregas.html')));
+app.get('/espera', (req, res) => res.sendFile(path.join(__dirname, 'src', 'espera.html')));
+app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'src', 'admin.html')));
+app.get('/menu.html', (req, res) => res.sendFile(path.join(__dirname, 'src', 'menu.html')));
+
+// 🔧 CORREGIDO: Respuesta en JSON válido
+app.get('/proxy/menu', (req, res) => {
+  res.json({ menu: global.menuDelDia });
+});
+
+app.post('/pedido', async (req, res) => {
+  const { nombre, cedula, producto } = req.body;
+
+  try {
+    const precios = {
+      'Almuerzo especial empleado': 14000,
+      'Bandeja especial empleado': 13000,
+      'Almuerzo empleado': 12000,
+      'Bandeja empleado': 11500,
+      'Desayuno empleado': 6500,
+      'Cena empleado': 12500
+    };
+
+    const precio = precios[producto] || 0;
+    const fecha = new Date();
+
+    await pool.query(
+      'INSERT INTO pedidos (fecha, nombre, cedula, producto, precio, entregado) VALUES ($1, $2, $3, $4, $5, $6)',
+      [fecha, nombre.trim(), cedula.trim(), producto.trim(), precio, false]
+    );
+
+    res.redirect(`/pedido.html?cedula=${encodeURIComponent(cedula.trim())}`);
+  } catch (error) {
+    console.error('❌ Error al guardar pedido:', error);
+    res.status(500).send('Error al guardar el pedido');
+  }
+});
+
+app.get('/api/pedido/:cedula', async (req, res) => {
+  const { cedula } = req.params;
+  try {
+    const result = await pool.query(
+      'SELECT * FROM pedidos WHERE cedula = $1 ORDER BY fecha DESC LIMIT 1',
+      [cedula]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'No se encontró el pedido' });
     }
 
-    .container {
-      display: flex;
-      gap: 2em;
-      align-items: flex-start;
-      max-width: 1000px;
-      width: 100%;
-      padding: 1em;
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('❌ Error al consultar el pedido:', err);
+    res.status(500).json({ error: 'Error al consultar el pedido' });
+  }
+});
+
+app.get('/api/pedido/:cedula/entregar', async (req, res) => {
+  const { cedula } = req.params;
+  try {
+    const result = await pool.query(
+      'UPDATE pedidos SET entregado = true WHERE cedula = $1 AND entregado = false RETURNING *',
+      [cedula]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).send('Pedido no encontrado o ya entregado');
     }
 
-    .menu-container, .form-container {
-      background: white;
-      padding: 2em;
-      border-radius: 12px;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-      width: 100%;
+    res.send('✅ Pedido marcado como entregado');
+  } catch (err) {
+    console.error('❌ Error al marcar como entregado:', err);
+    res.status(500).send('Error al actualizar el pedido');
+  }
+});
+
+app.get('/api/pedidos', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM pedidos ORDER BY fecha DESC');
+    res.json(result.rows);
+  } catch (err) {
+    console.error('❌ Error al obtener pedidos:', err);
+    res.status(500).json({ error: 'Error al obtener pedidos' });
+  }
+});
+
+app.get('/api/pedidos/exportar', async (req, res) => {
+  try {
+    const { cedula, entregado, desde, hasta } = req.query;
+
+    let baseQuery = 'SELECT * FROM pedidos WHERE 1=1';
+    const params = [];
+
+    if (cedula) {
+      params.push(`%${cedula}%`);
+      baseQuery += ` AND cedula ILIKE $${params.length}`;
     }
 
-    .menu-container {
-      max-width: 400px;
+    if (entregado === 'true' || entregado === 'false') {
+      params.push(entregado === 'true');
+      baseQuery += ` AND entregado = $${params.length}`;
     }
 
-    .form-container {
-      max-width: 500px;
+    if (desde) {
+      params.push(new Date(desde));
+      baseQuery += ` AND fecha >= $${params.length}`;
     }
 
-    h2 {
-      text-align: center;
-      margin-bottom: 1em;
-      color: #333;
+    if (hasta) {
+      const hastaFecha = new Date(hasta);
+      hastaFecha.setHours(23, 59, 59, 999);
+      params.push(hastaFecha);
+      baseQuery += ` AND fecha <= $${params.length}`;
     }
 
-    label {
-      font-weight: bold;
-      display: block;
-      margin-top: 1em;
-      margin-bottom: 0.2em;
-      color: #444;
-    }
+    baseQuery += ' ORDER BY fecha DESC';
+    const result = await pool.query(baseQuery, params);
 
-    input, select {
-      width: 100%;
-      padding: 0.7em;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      margin-bottom: 1em;
-      font-size: 14px;
-    }
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Pedidos');
 
-    button {
-      width: 100%;
-      padding: 0.8em;
-      border: none;
-      border-radius: 8px;
-      background-color: #007bff;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
+    worksheet.columns = [
+      { header: 'Fecha', key: 'fecha', width: 20 },
+      { header: 'Nombre', key: 'nombre', width: 30 },
+      { header: 'Cédula', key: 'cedula', width: 20 },
+      { header: 'Producto', key: 'producto', width: 25 },
+      { header: 'Precio', key: 'precio', width: 15 },
+      { header: 'Entregado', key: 'entregado', width: 15 }
+    ];
 
-    button:hover {
-      background-color: #0056b3;
-    }
+    result.rows.forEach(p => {
+      worksheet.addRow({
+        fecha: new Date(p.fecha).toLocaleString(),
+        nombre: p.nombre,
+        cedula: p.cedula,
+        producto: p.producto,
+        precio: p.precio,
+        entregado: p.entregado ? 'Sí' : 'No'
+      });
+    });
 
-    #menu-dia {
-      font-size: 15px;
-      white-space: pre-wrap;
-      color: #333;
-      background: #f9f9f9;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      padding: 1em;
-      min-height: 200px;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="menu-container">
-      <h2>📋 Menú del Día</h2>
-      <div id="menu-dia">Cargando menú del día...</div>
-    </div>
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename=pedidos.xlsx');
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (err) {
+    console.error('❌ Error al exportar pedidos:', err);
+    res.status(500).send('Error al exportar pedidos');
+  }
+});
 
-    <div class="form-container">
-      <h2>Formulario de Pedido</h2>
-      <form method="POST" action="https://b75b-186-114-65-91.ngrok-free.app/pedido">
-        <label for="nombre">Nombre:</label>
-        <input type="text" name="nombre" id="nombre" required>
+app.post('/api/menu', (req, res) => {
+  try {
+    global.menuDelDia = req.body.menu || '';
+    console.log('✅ Menú recibido:', global.menuDelDia);
+    res.status(200).json({ message: '✅ Menú actualizado correctamente' });
+  } catch (err) {
+    res.status(500).json({ error: '❌ Error al guardar el menú' });
+  }
+});
 
-        <label for="cedula">Cédula:</label>
-        <input type="text" name="cedula" id="cedula" required>
+app.get('/api/menu', (req, res) => {
+  console.log('📤 Enviando menú actual:', global.menuDelDia);
+  res.json({ menu: global.menuDelDia });
+});
 
-        <label for="producto">Tipo de Producto:</label>
-        <select name="producto" id="producto" required>
-          <option value="">-- Selecciona --</option>
-          <option value="Almuerzo especial empleado">Almuerzo especial empleado</option>
-          <option value="Bandeja especial empleado">Bandeja especial empleado</option>
-          <option value="Almuerzo empleado">Almuerzo empleado</option>
-          <option value="Bandeja empleado">Bandeja empleado</option>
-          <option value="Desayuno empleado">Desayuno empleado</option>
-          <option value="Cena empleado">Cena empleado</option>
-        </select>
-
-        <button type="submit">Enviar Pedido</button>
-      </form>
-    </div>
-  </div>
-
-  <script>
-    function cargarMenu() {
-      fetch("https://b75b-186-114-65-91.ngrok-free.app/proxy/menu")
-        .then(res => {
-          const contentType = res.headers.get("content-type") || "";
-          if (!res.ok || !contentType.includes("application/json")) {
-            throw new Error("Respuesta no válida o no es JSON");
-          }
-          return res.json();
-        })
-        .then(data => {
-          const div = document.getElementById("menu-dia");
-          if (data && data.menu) {
-            div.textContent = data.menu;
-          } else {
-            div.textContent = "⚠️ No se ha establecido un menú para hoy.";
-          }
-        })
-        .catch(err => {
-          console.error("❌ Error al cargar el menú:", err);
-          document.getElementById("menu-dia").textContent = "⚠️ Error al cargar el menú.";
-        });
-    }
-
-    cargarMenu(); // Ejecutar al cargar la página
-  </script>
-</body>
-</html>
+// Iniciar servidor
+app.listen(port, () => {
+  console.log(`🚀 Servidor corriendo en http://localhost:${port}`);
+});
