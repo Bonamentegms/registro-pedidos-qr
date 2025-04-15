@@ -3,24 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <title>Formulario de Pedido</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
       background: #f5f7fa;
       font-family: 'Segoe UI', sans-serif;
-      height: 100vh;
       margin: 0;
+      padding: 2em 1em;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
-    }
-
-    .container {
-      display: flex;
-      gap: 2em;
-      align-items: flex-start;
-      max-width: 1000px;
-      width: 100%;
-      padding: 1em;
     }
 
     .menu-container, .form-container {
@@ -29,54 +21,14 @@
       border-radius: 12px;
       box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
       width: 100%;
-    }
-
-    .menu-container {
-      max-width: 400px;
-      text-align: center;
-    }
-
-    .form-container {
       max-width: 500px;
+      margin-bottom: 2em;
     }
 
     h2 {
       text-align: center;
       margin-bottom: 1em;
       color: #333;
-    }
-
-    label {
-      font-weight: bold;
-      display: block;
-      margin-top: 1em;
-      margin-bottom: 0.2em;
-      color: #444;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 0.7em;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      margin-bottom: 1em;
-      font-size: 14px;
-    }
-
-    button {
-      width: 100%;
-      padding: 0.8em;
-      border: none;
-      border-radius: 8px;
-      background-color: #007bff;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-
-    button:hover {
-      background-color: #0056b3;
     }
 
     #menu-imagen {
@@ -98,82 +50,87 @@
       color: #cc0000;
       font-size: 14px;
       margin-top: 1em;
+      text-align: center;
     }
 
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 9999;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background-color: rgba(0,0,0,0.8);
-      justify-content: center;
-      align-items: center;
+    form label {
+      font-weight: bold;
+      display: block;
+      margin-top: 1em;
+      color: #444;
     }
 
-    .modal img {
-      max-width: 90%;
-      max-height: 90%;
-      border-radius: 10px;
-      box-shadow: 0 0 20px black;
+    input, select {
+      width: 100%;
+      padding: 0.7em;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-top: 0.4em;
+      font-size: 14px;
+    }
+
+    button {
+      width: 100%;
+      padding: 0.8em;
+      border: none;
+      border-radius: 8px;
+      background-color: #007bff;
+      color: white;
+      font-size: 16px;
+      margin-top: 1.5em;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="menu-container">
-      <h2>📋 Menú del Día</h2>
-      <img id="menu-imagen" src="" alt="Menú del día" onerror="mostrarMensajeError()" />
-      <div id="imagen-error" style="display: none;">⚠️ No se ha subido imagen del menú para hoy.</div>
-    </div>
 
-    <div class="form-container">
-      <h2>Formulario de Pedido</h2>
-      <form method="POST" action="https://b75b-186-114-65-91.ngrok-free.app/pedido">
-        <label for="nombre">Nombre:</label>
-        <input type="text" name="nombre" id="nombre" required>
-        <label for="cedula">Cédula:</label>
-        <input type="text" name="cedula" id="cedula" required>
-        <label for="producto">Tipo de Producto:</label>
-        <select name="producto" id="producto" required>
-          <option value="">-- Selecciona --</option>
-          <option value="Almuerzo especial empleado">Almuerzo especial empleado</option>
-          <option value="Bandeja especial empleado">Bandeja especial empleado</option>
-          <option value="Almuerzo empleado">Almuerzo empleado</option>
-          <option value="Bandeja empleado">Bandeja empleado</option>
-          <option value="Desayuno empleado">Desayuno empleado</option>
-          <option value="Cena empleado">Cena empleado</option>
-        </select>
-        <button type="submit">Enviar Pedido</button>
-      </form>
-    </div>
+  <!-- Menú del día -->
+  <div class="menu-container">
+    <h2>📋 Menú del Día</h2>
+    <img id="menu-imagen" src="" alt="Menú del día" onerror="mostrarMensajeError()" />
+    <div id="imagen-error" style="display: none;">⚠️ No se ha subido imagen del menú para hoy.</div>
   </div>
 
-  <div class="modal" id="modal">
-    <img id="modal-img" src="" alt="Menú ampliado" />
+  <!-- Formulario -->
+  <div class="form-container">
+    <h2>Formulario de Pedido</h2>
+    <form method="POST" action="https://b75b-186-114-65-91.ngrok-free.app/pedido">
+      <label for="nombre">Nombre:</label>
+      <input type="text" name="nombre" id="nombre" required>
+
+      <label for="cedula">Cédula:</label>
+      <input type="text" name="cedula" id="cedula" required>
+
+      <label for="producto">Tipo de Producto:</label>
+      <select name="producto" id="producto" required>
+        <option value="">-- Selecciona --</option>
+        <option value="Almuerzo especial empleado">Almuerzo especial empleado</option>
+        <option value="Bandeja especial empleado">Bandeja especial empleado</option>
+        <option value="Almuerzo empleado">Almuerzo empleado</option>
+        <option value="Bandeja empleado">Bandeja empleado</option>
+        <option value="Desayuno empleado">Desayuno empleado</option>
+        <option value="Cena empleado">Cena empleado</option>
+      </select>
+
+      <button type="submit">Enviar Pedido</button>
+    </form>
   </div>
 
   <script>
     const menuImg = document.getElementById("menu-imagen");
-    const modal = document.getElementById("modal");
-    const modalImg = document.getElementById("modal-img");
     const timestamp = new Date().getTime();
+
+    // URL de imagen dinámica desde el backend con timestamp para evitar caché
     menuImg.src = `https://b75b-186-114-65-91.ngrok-free.app/uploads/menu.jpg?t=${timestamp}`;
 
     function mostrarMensajeError() {
       document.getElementById("imagen-error").style.display = "block";
     }
-
-    menuImg.onclick = () => {
-      modal.style.display = "flex";
-      modalImg.src = menuImg.src;
-    };
-
-    modal.onclick = () => {
-      modal.style.display = "none";
-    };
   </script>
 </body>
 </html>
