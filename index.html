@@ -123,8 +123,13 @@
   </div>
 
   <script>
-    fetch("https://b75b-186-114-65-91.ngrok-free.app/api/menu")
-      .then(res => res.json())
+    fetch("https://b75b-186-114-65-91.ngrok-free.app/api/menu", {
+      headers: { "Accept": "application/json" }
+    })
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
       .then(data => {
         const div = document.getElementById("menu-dia");
         if (data && data.menu) {
@@ -134,7 +139,7 @@
         }
       })
       .catch(err => {
-        console.error("Error al cargar el menú:", err);
+        console.error("❌ Error al cargar el menú:", err);
         document.getElementById("menu-dia").textContent = "⚠️ Error al cargar el menú.";
       });
   </script>
