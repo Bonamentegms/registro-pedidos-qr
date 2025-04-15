@@ -7,20 +7,11 @@
     body {
       background: #f5f7fa;
       font-family: 'Segoe UI', sans-serif;
-      height: 100vh;
       margin: 0;
+      padding: 2em;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
-    }
-
-    .container {
-      display: flex;
-      gap: 2em;
-      align-items: flex-start;
-      max-width: 1000px;
-      width: 100%;
-      padding: 1em;
     }
 
     .menu-container, .form-container {
@@ -29,15 +20,8 @@
       border-radius: 12px;
       box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
       width: 100%;
-    }
-
-    .menu-container {
-      max-width: 400px;
-      text-align: center;
-    }
-
-    .form-container {
-      max-width: 500px;
+      max-width: 600px;
+      margin-bottom: 2em;
     }
 
     h2 {
@@ -98,6 +82,7 @@
       color: #cc0000;
       font-size: 14px;
       margin-top: 1em;
+      text-align: center;
     }
 
     .modal {
@@ -119,39 +104,41 @@
       border-radius: 10px;
       box-shadow: 0 0 20px black;
     }
+
+    .modal:active {
+      display: none;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="menu-container">
-      <h2>📋 Menú del Día</h2>
-      <img id="menu-imagen" src="" alt="Menú del día" onerror="mostrarMensajeError()" />
-      <div id="imagen-error" style="display: none;">⚠️ No se ha subido imagen del menú para hoy.</div>
-    </div>
+  <div class="menu-container">
+    <h2>📋 Menú del Día</h2>
+    <img id="menu-imagen" src="" alt="Menú del día" crossorigin="anonymous" onerror="mostrarMensajeError()" />
+    <div id="imagen-error" style="display: none;">⚠️ No se ha subido imagen del menú para hoy.</div>
+  </div>
 
-    <div class="form-container">
-      <h2>Formulario de Pedido</h2>
-      <form method="POST" action="https://b75b-186-114-65-91.ngrok-free.app/pedido">
-        <label for="nombre">Nombre:</label>
-        <input type="text" name="nombre" id="nombre" required>
+  <div class="form-container">
+    <h2>Formulario de Pedido</h2>
+    <form method="POST" action="https://b75b-186-114-65-91.ngrok-free.app/pedido">
+      <label for="nombre">Nombre:</label>
+      <input type="text" name="nombre" id="nombre" required>
 
-        <label for="cedula">Cédula:</label>
-        <input type="text" name="cedula" id="cedula" required>
+      <label for="cedula">Cédula:</label>
+      <input type="text" name="cedula" id="cedula" required>
 
-        <label for="producto">Tipo de Producto:</label>
-        <select name="producto" id="producto" required>
-          <option value="">-- Selecciona --</option>
-          <option value="Almuerzo especial empleado">Almuerzo especial empleado</option>
-          <option value="Bandeja especial empleado">Bandeja especial empleado</option>
-          <option value="Almuerzo empleado">Almuerzo empleado</option>
-          <option value="Bandeja empleado">Bandeja empleado</option>
-          <option value="Desayuno empleado">Desayuno empleado</option>
-          <option value="Cena empleado">Cena empleado</option>
-        </select>
+      <label for="producto">Tipo de Producto:</label>
+      <select name="producto" id="producto" required>
+        <option value="">-- Selecciona --</option>
+        <option value="Almuerzo especial empleado">Almuerzo especial empleado</option>
+        <option value="Bandeja especial empleado">Bandeja especial empleado</option>
+        <option value="Almuerzo empleado">Almuerzo empleado</option>
+        <option value="Bandeja empleado">Bandeja empleado</option>
+        <option value="Desayuno empleado">Desayuno empleado</option>
+        <option value="Cena empleado">Cena empleado</option>
+      </select>
 
-        <button type="submit">Enviar Pedido</button>
-      </form>
-    </div>
+      <button type="submit">Enviar Pedido</button>
+    </form>
   </div>
 
   <div class="modal" id="modal">
@@ -163,8 +150,9 @@
     const modal = document.getElementById("modal");
     const modalImg = document.getElementById("modal-img");
 
+    // Mostrar imagen con timestamp para evitar caché
     const timestamp = new Date().getTime();
-    menuImg.src = "https://b75b-186-114-65-91.ngrok-free.app/uploads/menu.jpg?t=" + timestamp;
+    menuImg.src = `https://b75b-186-114-65-91.ngrok-free.app/uploads/menu.jpg?t=${timestamp}`;
 
     function mostrarMensajeError() {
       document.getElementById("imagen-error").style.display = "block";
