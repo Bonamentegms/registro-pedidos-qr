@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>📝 Ingresar Menú del Día</title>
+  <style>
+    body {
+      background: #f0f2f5;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 2em;
+    }
+
+    .container {
+      background: white;
+      padding: 2em 2.5em;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+      width: 100%;
+      max-width: 600px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 1em;
+      color: #333;
+    }
+
+    textarea {
+      width: 100%;
+      height: 200px;
+      padding: 1em;
+      font-size: 15px;
+      font-family: inherit;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      resize: vertical;
+      box-sizing: border-box;
+    }
+
+    button {
+      margin-top: 1em;
+      width: 100%;
+      padding: 0.8em;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+
+    .mensaje {
+      text-align: center;
+      margin-top: 1em;
+      color: #28a745;
+      font-weight: bold;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📝 Menú del Día</h2>
+    <textarea id="menu" placeholder="Escribe aquí el menú del día... (puedes usar emojis 🍲🥗🍗)"></textarea>
+    <button onclick="guardarMenu()">Guardar Menú</button>
+    <div id="mensaje" class="mensaje">✅ Menú guardado con éxito</div>
+  </div>
+
+  <script>
+    const backendURL = "https://b75b-186-114-65-91.ngrok-free.app";
+
+    // Cargar menú actual
+    fetch(`${backendURL}/api/menu`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.menu) {
+          document.getElementById("menu").value = data.menu;
+        }
+      });
+
+    function guardarMenu() {
+      const texto = document.getElementById("menu").value.trim();
+
+      fetch(`${backendURL}/api/menu`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ menu: texto })
+      })
+      .then(res => res.ok ? mostrarConfirmacion() : alert("❌ Error al guardar"))
+      .catch(() => alert("❌ No se pudo guardar el menú"));
+    }
+
+    function mostrarConfirmacion() {
+      const msg = document.getElementById("mensaje");
+      msg.style.display = 'block';
+      setTimeout(() => msg.style.display = 'none', 3000);
+    }
+  </script>
+</body>
+</html>
