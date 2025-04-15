@@ -126,14 +126,23 @@
   </div>
   <script>
     const menuImg = document.getElementById("menu-imagen");
-    const timestamp = new Date().getTime();
+    const modal = document.getElementById("modal");
+    const modalImg = document.getElementById("modal-img");
 
-    // URL de imagen dinámica desde el backend con timestamp para evitar caché
-    menuImg.src = `https://b75b-186-114-65-91.ngrok-free.app/uploads/menu.jpg?t=${timestamp}`;
+    menuImg.src = "https://b75b-186-114-65-91.ngrok-free.app/uploads/menu.jpg";
 
     function mostrarMensajeError() {
       document.getElementById("imagen-error").style.display = "block";
     }
+
+    menuImg.onclick = () => {
+      modal.style.display = "flex";
+      modalImg.src = menuImg.src;
+    };
+
+    modal.onclick = () => {
+      modal.style.display = "none";
+    };
   </script>
 </body>
 </html>
