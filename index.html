@@ -134,10 +134,8 @@
       <form method="POST" action="https://b75b-186-114-65-91.ngrok-free.app/pedido">
         <label for="nombre">Nombre:</label>
         <input type="text" name="nombre" id="nombre" required>
-
         <label for="cedula">Cédula:</label>
         <input type="text" name="cedula" id="cedula" required>
-
         <label for="producto">Tipo de Producto:</label>
         <select name="producto" id="producto" required>
           <option value="">-- Selecciona --</option>
@@ -148,7 +146,6 @@
           <option value="Desayuno empleado">Desayuno empleado</option>
           <option value="Cena empleado">Cena empleado</option>
         </select>
-
         <button type="submit">Enviar Pedido</button>
       </form>
     </div>
@@ -162,9 +159,8 @@
     const menuImg = document.getElementById("menu-imagen");
     const modal = document.getElementById("modal");
     const modalImg = document.getElementById("modal-img");
-
     const timestamp = new Date().getTime();
-    menuImg.src = "https://b75b-186-114-65-91.ngrok-free.app/uploads/menu.jpg?t=" + timestamp;
+    menuImg.src = `https://b75b-186-114-65-91.ngrok-free.app/uploads/menu.jpg?t=${timestamp}`;
 
     function mostrarMensajeError() {
       document.getElementById("imagen-error").style.display = "block";
