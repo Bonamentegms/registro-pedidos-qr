@@ -7,20 +7,36 @@
     body {
       background: #f5f7fa;
       font-family: 'Segoe UI', sans-serif;
+      height: 100vh;
+      margin: 0;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      margin: 0;
     }
 
-    .form-container {
+    .container {
+      display: flex;
+      gap: 2em;
+      align-items: flex-start;
+      max-width: 900px;
+      width: 100%;
+      padding: 1em;
+    }
+
+    .menu-container, .form-container {
       background: white;
-      padding: 2em 2.5em;
+      padding: 2em;
       border-radius: 12px;
       box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
       width: 100%;
+    }
+
+    .menu-container {
       max-width: 400px;
+    }
+
+    .form-container {
+      max-width: 500px;
     }
 
     h2 {
@@ -61,31 +77,65 @@
     button:hover {
       background-color: #0056b3;
     }
+
+    #menu-dia {
+      font-size: 15px;
+      white-space: pre-wrap;
+      color: #333;
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 1em;
+    }
   </style>
 </head>
 <body>
-  <div class="form-container">
-    <h2>Formulario de Pedido</h2>
-    <form method="POST" action="https://b75b-186-114-65-91.ngrok-free.app/pedido">
-      <label for="nombre">Nombre:</label>
-      <input type="text" name="nombre" id="nombre" required>
+  <div class="container">
+    <div class="menu-container">
+      <h2>📋 Menú del Día</h2>
+      <div id="menu-dia">Cargando menú del día...</div>
+    </div>
 
-      <label for="cedula">Cédula:</label>
-      <input type="text" name="cedula" id="cedula" required>
+    <div class="form-container">
+      <h2>Formulario de Pedido</h2>
+      <form method="POST" action="https://b75b-186-114-65-91.ngrok-free.app/pedido">
+        <label for="nombre">Nombre:</label>
+        <input type="text" name="nombre" id="nombre" required>
 
-      <label for="producto">Tipo de Producto:</label>
-      <select name="producto" id="producto" required>
-        <option value="">-- Selecciona --</option>
-        <option value="Almuerzo especial empleado">Almuerzo especial empleado</option>
-        <option value="Bandeja especial empleado">Bandeja especial empleado</option>
-        <option value="Almuerzo empleado">Almuerzo empleado</option>
-        <option value="Bandeja empleado">Bandeja empleado</option>
-        <option value="Desayuno empleado">Desayuno empleado</option>
-        <option value="Cena empleado">Cena empleado</option>
-      </select>
+        <label for="cedula">Cédula:</label>
+        <input type="text" name="cedula" id="cedula" required>
 
-      <button type="submit">Enviar Pedido</button>
-    </form>
+        <label for="producto">Tipo de Producto:</label>
+        <select name="producto" id="producto" required>
+          <option value="">-- Selecciona --</option>
+          <option value="Almuerzo especial empleado">Almuerzo especial empleado</option>
+          <option value="Bandeja especial empleado">Bandeja especial empleado</option>
+          <option value="Almuerzo empleado">Almuerzo empleado</option>
+          <option value="Bandeja empleado">Bandeja empleado</option>
+          <option value="Desayuno empleado">Desayuno empleado</option>
+          <option value="Cena empleado">Cena empleado</option>
+        </select>
+
+        <button type="submit">Enviar Pedido</button>
+      </form>
+    </div>
   </div>
+
+  <script>
+    fetch("https://b75b-186-114-65-91.ngrok-free.app/api/menu")
+      .then(res => res.json())
+      .then(data => {
+        const div = document.getElementById("menu-dia");
+        if (data && data.menu) {
+          div.textContent = data.menu;
+        } else {
+          div.textContent = "⚠️ No se ha establecido un menú para hoy.";
+        }
+      })
+      .catch(err => {
+        console.error("Error al cargar el menú:", err);
+        document.getElementById("menu-dia").textContent = "⚠️ Error al cargar el menú.";
+      });
+  </script>
 </body>
 </html>
