@@ -33,6 +33,7 @@
 
     .menu-container {
       max-width: 400px;
+      text-align: center;
     }
 
     .form-container {
@@ -78,10 +79,15 @@
       background-color: #0056b3;
     }
 
-    #menu-img {
-      width: 100%;
-      border-radius: 10px;
+    #menu-imagen {
+      max-width: 100%;
+      border-radius: 8px;
       border: 1px solid #ccc;
+    }
+
+    #imagen-error {
+      color: #cc0000;
+      font-size: 14px;
     }
   </style>
 </head>
@@ -89,8 +95,8 @@
   <div class="container">
     <div class="menu-container">
       <h2>📋 Menú del Día</h2>
-      <!-- 🔁 Imagen del menú cargada desde el backend -->
-      <img id="menu-img" src="https://b75b-186-114-65-91.ngrok-free.app/uploads/menu.jpg" alt="Menú del día" onerror="this.style.display='none'">
+      <img id="menu-imagen" src="" alt="Menú del día" onerror="mostrarMensajeError()" />
+      <div id="imagen-error" style="display: none;">⚠️ No se ha subido imagen del menú para hoy.</div>
     </div>
 
     <div class="form-container">
@@ -117,5 +123,16 @@
       </form>
     </div>
   </div>
+
+  <script>
+    const menuImg = document.getElementById("menu-imagen");
+
+    // ⚠️ Cambia esta URL si cambia tu dirección ngrok
+    menuImg.src = "https://b75b-186-114-65-91.ngrok-free.app/uploads/menu.jpg";
+
+    function mostrarMensajeError() {
+      document.getElementById("imagen-error").style.display = "block";
+    }
+  </script>
 </body>
 </html>
