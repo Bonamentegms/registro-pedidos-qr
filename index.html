@@ -119,17 +119,13 @@
       border-radius: 10px;
       box-shadow: 0 0 20px black;
     }
-
-    .modal:active {
-      display: none;
-    }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="menu-container">
       <h2>📋 Menú del Día</h2>
-      <img id="menu-imagen" src="" alt="Menú del día" crossorigin="anonymous" onerror="mostrarMensajeError()" />
+      <img id="menu-imagen" src="" alt="Menú del día" onerror="mostrarMensajeError()" />
       <div id="imagen-error" style="display: none;">⚠️ No se ha subido imagen del menú para hoy.</div>
     </div>
 
@@ -167,9 +163,8 @@
     const modal = document.getElementById("modal");
     const modalImg = document.getElementById("modal-img");
 
-    // ⚠️ Forzar actualización usando timestamp para evitar caché
     const timestamp = new Date().getTime();
-    menuImg.src = `https://b75b-186-114-65-91.ngrok-free.app/uploads/menu.jpg?t=${timestamp}`;
+    menuImg.src = "https://b75b-186-114-65-91.ngrok-free.app/uploads/menu.jpg?t=" + timestamp;
 
     function mostrarMensajeError() {
       document.getElementById("imagen-error").style.display = "block";
