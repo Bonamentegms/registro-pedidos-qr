@@ -88,13 +88,19 @@
 
     // Cargar el menú actual al iniciar
     fetch(`${backendURL}/api/menu`)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error(`Error HTTP ${res.status}`);
+        return res.json();
+      })
       .then(data => {
         if (data.menu) {
           document.getElementById("menu").value = data.menu;
+        } else {
+          mostrarMensaje("⚠️ No hay menú guardado actualmente", "error");
         }
       })
-      .catch(() => {
+      .catch(err => {
+        console.error("❌ Error al cargar el menú:", err);
         mostrarMensaje("❌ Error al cargar el menú actual", "error");
       });
 
@@ -110,10 +116,11 @@
         if (res.ok) {
           mostrarMensaje("✅ Menú guardado con éxito", "ok");
         } else {
-          mostrarMensaje("❌ Error al guardar el menú", "error");
+          throw new Error("Error al guardar");
         }
       })
-      .catch(() => {
+      .catch(err => {
+        console.error("❌ Error al guardar el menú:", err);
         mostrarMensaje("❌ No se pudo guardar el menú", "error");
       });
     }
