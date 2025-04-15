@@ -1,31 +1,78 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Detalle del Pedido</title>
+  <meta charset="UTF-8" />
+  <title>Pedido Registrado</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding: 2em; }
-    canvas { margin-top: 1em; }
+    body {
+      background: #f0f2f5;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .card {
+      background: #fff;
+      padding: 2em;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      max-width: 420px;
+      width: 100%;
+    }
+
+    h2 {
+      color: #28a745;
+      margin-bottom: 1em;
+    }
+
+    .info p {
+      margin: 0.4em 0;
+      font-size: 15px;
+    }
+
+    .status {
+      font-weight: bold;
+      margin-top: 1em;
+    }
+
+    canvas {
+      margin-top: 1.5em;
+    }
+
+    .error {
+      color: red;
+      font-weight: bold;
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
 </head>
 <body>
-  <h2>📦 Pedido Registrado</h2>
-  <div id="info">Cargando...</div>
-  <canvas id="qr"></canvas>
+  <div class="card">
+    <h2>✅ Pedido Registrado</h2>
+    <div id="info" class="info">Cargando información del pedido...</div>
+    <canvas id="qr"></canvas>
+  </div>
 
   <script>
     const params = new URLSearchParams(window.location.search);
     const cedula = params.get("cedula");
 
     if (!cedula) {
-      document.getElementById("info").textContent = "❌ Cédula no especificada.";
+      document.getElementById("info").innerHTML = '<p class="error">❌ Cédula no especificada.</p>';
     } else {
-      fetch(`/api/pedido/${cedula}`)
-        .then(res => res.json())
+      fetch(`https://b75b-186-114-65-91.ngrok-free.app/api/pedido/${cedula}`)
+        .then(res => {
+          if (!res.ok) throw new Error("Respuesta inválida");
+          return res.json();
+        })
         .then(data => {
           if (!data || !data.nombre) {
-            document.getElementById("info").textContent = "❌ Pedido no encontrado.";
+            document.getElementById("info").innerHTML = '<p class="error">❌ Pedido no encontrado.</p>';
             return;
           }
 
@@ -35,18 +82,18 @@
             <p><strong>Producto:</strong> ${data.producto}</p>
             <p><strong>Precio:</strong> $${data.precio}</p>
             <p><strong>Fecha:</strong> ${new Date(data.fecha).toLocaleString()}</p>
-            <p><strong>Entregado:</strong> ${data.entregado ? "✅ Sí" : "❌ No"}</p>
+            <p class="status"><strong>Entregado:</strong> ${data.entregado ? "✅ Sí" : "❌ No"}</p>
           `;
 
           new QRious({
             element: document.getElementById("qr"),
-            value: window.location.href,
+            value: `https://b75b-186-114-65-91.ngrok-free.app/entregas.html?cedula=${cedula}`,
             size: 200
           });
         })
         .catch(err => {
           console.error("Error:", err);
-          document.getElementById("info").textContent = "❌ Error al cargar el pedido.";
+          document.getElementById("info").innerHTML = '<p class="error">❌ Error al cargar el pedido.</p>';
         });
     }
   </script>
