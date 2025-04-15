@@ -62,9 +62,16 @@
     .mensaje {
       text-align: center;
       margin-top: 1em;
-      color: #28a745;
       font-weight: bold;
       display: none;
+    }
+
+    .ok {
+      color: #28a745;
+    }
+
+    .error {
+      color: #dc3545;
     }
   </style>
 </head>
@@ -73,19 +80,22 @@
     <h2>📝 Menú del Día</h2>
     <textarea id="menu" placeholder="Escribe aquí el menú del día... (puedes usar emojis 🍲🥗🍗)"></textarea>
     <button onclick="guardarMenu()">Guardar Menú</button>
-    <div id="mensaje" class="mensaje">✅ Menú guardado con éxito</div>
+    <div id="mensaje" class="mensaje"></div>
   </div>
 
   <script>
     const backendURL = "https://b75b-186-114-65-91.ngrok-free.app";
 
-    // Cargar menú actual
+    // Cargar el menú actual al iniciar
     fetch(`${backendURL}/api/menu`)
       .then(res => res.json())
       .then(data => {
         if (data.menu) {
           document.getElementById("menu").value = data.menu;
         }
+      })
+      .catch(() => {
+        mostrarMensaje("❌ Error al cargar el menú actual", "error");
       });
 
     function guardarMenu() {
@@ -96,14 +106,24 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ menu: texto })
       })
-      .then(res => res.ok ? mostrarConfirmacion() : alert("❌ Error al guardar"))
-      .catch(() => alert("❌ No se pudo guardar el menú"));
+      .then(res => {
+        if (res.ok) {
+          mostrarMensaje("✅ Menú guardado con éxito", "ok");
+        } else {
+          mostrarMensaje("❌ Error al guardar el menú", "error");
+        }
+      })
+      .catch(() => {
+        mostrarMensaje("❌ No se pudo guardar el menú", "error");
+      });
     }
 
-    function mostrarConfirmacion() {
+    function mostrarMensaje(texto, tipo) {
       const msg = document.getElementById("mensaje");
+      msg.textContent = texto;
+      msg.className = `mensaje ${tipo}`;
       msg.style.display = 'block';
-      setTimeout(() => msg.style.display = 'none', 3000);
+      setTimeout(() => msg.style.display = 'none', 4000);
     }
   </script>
 </body>
