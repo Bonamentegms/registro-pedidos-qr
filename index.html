@@ -122,20 +122,11 @@
     </div>
   </div>
 
+  <!-- ✅ Carga el menú del día usando script JSON dinámico -->
+  <script src="https://b75b-186-114-65-91.ngrok-free.app/proxy/menu"></script>
   <script>
-    fetch("https://b75b-186-114-65-91.ngrok-free.app/proxy/menu")
-      .then(res => {
-        if (!res.ok) throw new Error("Error de respuesta");
-        return res.json();
-      })
-      .then(data => {
-        document.getElementById("menu-dia").textContent =
-          data.menu || "⚠️ No se ha establecido un menú para hoy.";
-      })
-      .catch(err => {
-        console.error("❌ Error al cargar el menú:", err);
-        document.getElementById("menu-dia").textContent = "⚠️ Error al cargar el menú.";
-      });
+    document.getElementById("menu-dia").textContent =
+      window.MENU_DEL_DIA || "⚠️ No se ha establecido un menú para hoy.";
   </script>
 </body>
 </html>
