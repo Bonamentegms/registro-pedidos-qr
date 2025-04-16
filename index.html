@@ -146,25 +146,28 @@
   <div class="modal" id="modal">
     <img id="modal-img" src="" alt="Menú ampliado" />
   </div>
-  <script>
-    const menuImg = document.getElementById("menu-imagen");
-    const modal = document.getElementById("modal");
-    const modalImg = document.getElementById("modal-img");
+<script>
+  const menuImg = document.getElementById("menu-imagen");
+  const modal = document.getElementById("modal");
+  const modalImg = document.getElementById("modal-img");
 
-    menuImg.src = "https://b75b-186-114-65-91.ngrok-free.app/uploads/menu.jpg";
+  // ✅ Agregamos timestamp para evitar problemas de caché
+  const timestamp = new Date().getTime();
+  menuImg.src = `https://b75b-186-114-65-91.ngrok-free.app/uploads/menu.jpg?t=${timestamp}`;
 
-    function mostrarMensajeError() {
-      document.getElementById("imagen-error").style.display = "block";
-    }
+  function mostrarMensajeError() {
+    document.getElementById("imagen-error").style.display = "block";
+  }
 
-    menuImg.onclick = () => {
-      modal.style.display = "flex";
-      modalImg.src = menuImg.src;
-    };
+  menuImg.onclick = () => {
+    modal.style.display = "flex";
+    modalImg.src = menuImg.src;
+  };
 
-    modal.onclick = () => {
-      modal.style.display = "none";
-    };
-  </script>
+  modal.onclick = () => {
+    modal.style.display = "none";
+  };
+</script>
+
 </body>
 </html>
