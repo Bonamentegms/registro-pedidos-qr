@@ -2,73 +2,57 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>📝 Formulario de Pedido</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Formulario de Pedido</title>
   <style>
     body {
       background: #f5f7fa;
       font-family: 'Segoe UI', sans-serif;
       margin: 0;
       padding: 1em;
+      display: flex;
+      justify-content: center;
     }
 
     .container {
+      display: flex;
+      flex-direction: column;
+      gap: 2em;
       max-width: 500px;
-      margin: auto;
+      width: 100%;
     }
 
     .box {
       background: white;
       padding: 1.5em;
       border-radius: 12px;
-      box-shadow: 0 2px 15px rgba(0,0,0,0.08);
-      margin-bottom: 2em;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     }
 
     h2 {
       text-align: center;
-      margin-bottom: 1em;
       color: #333;
-    }
-
-    #menu-imagen {
-      width: 100%;
-      max-height: 400px;
-      object-fit: contain;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-      cursor: pointer;
-      transition: transform 0.2s ease;
-    }
-
-    #menu-imagen:hover {
-      transform: scale(1.02);
-    }
-
-    #imagen-error {
-      color: #cc0000;
-      font-size: 14px;
-      text-align: center;
-      margin-top: 1em;
+      margin-bottom: 1em;
     }
 
     label {
       font-weight: bold;
-      display: block;
       margin-top: 1em;
+      display: block;
       color: #444;
     }
 
     input, select {
       width: 100%;
-      padding: 0.6em;
+      padding: 0.7em;
       border-radius: 8px;
       border: 1px solid #ccc;
-      font-size: 14px;
+      font-size: 15px;
       margin-top: 0.3em;
     }
 
     button {
+      margin-top: 1.5em;
       width: 100%;
       padding: 0.8em;
       border: none;
@@ -76,103 +60,83 @@
       background-color: #007bff;
       color: white;
       font-size: 16px;
-      margin-top: 1.5em;
       cursor: pointer;
-      transition: background-color 0.3s ease;
     }
 
     button:hover {
       background-color: #0056b3;
     }
 
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 9999;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background-color: rgba(0,0,0,0.8);
-      justify-content: center;
-      align-items: center;
+    #menu-imagen {
+      width: 100%;
+      max-height: 300px;
+      object-fit: contain;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      margin-top: 1em;
+      display: block;
     }
 
-    .modal img {
-      max-width: 90%;
-      max-height: 90%;
-      border-radius: 10px;
+    #imagen-error {
+      color: #cc0000;
+      font-size: 14px;
+      margin-top: 1em;
+    }
+
+    @media (min-width: 768px) {
+      .container {
+        flex-direction: row;
+        justify-content: center;
+        align-items: flex-start;
+      }
+
+      .box {
+        flex: 1;
+      }
     }
   </style>
 </head>
 <body>
+  <div class="container">
+    <div class="box">
+      <h2>📋 Menú del Día</h2>
+      <img id="menu-imagen" src="" alt="Menú del día" onerror="mostrarMensajeError()" />
+      <div id="imagen-error" style="display: none;">⚠️ No se ha subido imagen del menú para hoy.</div>
+    </div>
 
-<div class="container">
-  <!-- Menú del Día -->
-  <div class="box">
-    <h2>📋 Menú del Día</h2>
-    <img id="menu-imagen" src="" alt="Menú del día" onerror="mostrarMensajeError()" />
-    <div id="imagen-error" style="display: none;">⚠️ No se ha subido imagen del menú para hoy.</div>
+    <div class="box">
+      <h2>Formulario de Pedido</h2>
+      <form method="POST" action="https://b75b-186-114-65-91.ngrok-free.app/pedido">
+        <label for="nombre">Nombre:</label>
+        <input type="text" name="nombre" id="nombre" required>
+
+        <label for="cedula">Cédula:</label>
+        <input type="text" name="cedula" id="cedula" required>
+
+        <label for="producto">Tipo de Producto:</label>
+        <select name="producto" id="producto" required>
+          <option value="">-- Selecciona --</option>
+          <option value="Almuerzo especial empleado">Almuerzo especial empleado</option>
+          <option value="Bandeja especial empleado">Bandeja especial empleado</option>
+          <option value="Almuerzo empleado">Almuerzo empleado</option>
+          <option value="Bandeja empleado">Bandeja empleado</option>
+          <option value="Desayuno empleado">Desayuno empleado</option>
+          <option value="Cena empleado">Cena empleado</option>
+        </select>
+
+        <button type="submit">Enviar Pedido</button>
+      </form>
+    </div>
   </div>
 
-  <!-- Formulario de Pedido -->
-  <div class="box">
-    <h2>Formulario de Pedido</h2>
-    <form method="POST" action="https://ce60-179-33-217-227.ngrok-free.app/pedido">
-      <label for="nombre">Nombre:</label>
-      <input type="text" name="nombre" id="nombre" required />
+  <script>
+    const menuImg = document.getElementById("menu-imagen");
+    const timestamp = new Date().getTime();
+    menuImg.src = `https://b75b-186-114-65-91.ngrok-free.app/uploads/menu.jpg?t=${timestamp}`;
 
-      <label for="cedula">Cédula:</label>
-      <input type="text" name="cedula" id="cedula" required />
-
-      <label for="producto">Tipo de Producto:</label>
-      <select name="producto" id="producto" required>
-        <option value="">-- Selecciona --</option>
-        <option value="Almuerzo especial empleado">Almuerzo especial empleado</option>
-        <option value="Bandeja especial empleado">Bandeja especial empleado</option>
-        <option value="Almuerzo empleado">Almuerzo empleado</option>
-        <option value="Bandeja empleado">Bandeja empleado</option>
-        <option value="Desayuno empleado">Desayuno empleado</option>
-        <option value="Cena empleado">Cena empleado</option>
-      </select>
-
-      <label for="cantidad">Cantidad:</label>
-      <input type="number" name="cantidad" id="cantidad" min="1" value="1" required />
-
-      <label for="observacion">Observación:</label>
-      <input type="text" name="observacion" id="observacion" />
-
-      <button type="submit">Enviar Pedido</button>
-    </form>
-  </div>
-</div>
-
-<!-- Modal para ver imagen ampliada -->
-<div class="modal" id="modal">
-  <img id="modal-img" src="" alt="Menú ampliado" />
-</div>
-
-<script>
-  const menuImg = document.getElementById("menu-imagen");
-  const modal = document.getElementById("modal");
-  const modalImg = document.getElementById("modal-img");
-
-  const timestamp = new Date().getTime();
-  menuImg.src = `https://ce60-179-33-217-227.ngrok-free.app/uploads/menu.jpg?t=${timestamp}`;
-
-  function mostrarMensajeError() {
-    document.getElementById("imagen-error").style.display = "block";
-  }
-
-  menuImg.onclick = () => {
-    modal.style.display = "flex";
-    modalImg.src = menuImg.src;
-  };
-
-  modal.onclick = () => {
-    modal.style.display = "none";
-  };
-</script>
-
+    function mostrarMensajeError() {
+      document.getElementById("imagen-error").style.display = "block";
+    }
+  </script>
 </body>
 </html>
