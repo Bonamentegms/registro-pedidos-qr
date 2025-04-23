@@ -127,13 +127,7 @@
 
       <label for="producto">Tipo de Producto:</label>
       <select name="producto" id="producto" required>
-        <option value="">-- Selecciona --</option>
-        <option value="Almuerzo especial empleado">Almuerzo especial empleado</option>
-        <option value="Bandeja especial empleado">Bandeja especial empleado</option>
-        <option value="Almuerzo empleado">Almuerzo empleado</option>
-        <option value="Bandeja empleado">Bandeja empleado</option>
-        <option value="Desayuno empleado">Desayuno empleado</option>
-        <option value="Cena empleado">Cena empleado</option>
+        <option value="">-- Cargando productos... --</option>
       </select>
 
       <label for="cantidad">Cantidad:</label>
@@ -172,6 +166,30 @@
   modal.onclick = () => {
     modal.style.display = "none";
   };
+
+  // 🔄 Cargar productos desde la base de datos
+  async function cargarProductos() {
+    try {
+      const res = await fetch('https://9a2b-186-114-65-91.ngrok-free.app/api/inventario');
+      const data = await res.json();
+
+      const select = document.getElementById('producto');
+      select.innerHTML = '<option value="">-- Selecciona --</option>';
+
+      data.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.producto;
+        opt.textContent = p.producto;
+        select.appendChild(opt);
+      });
+    } catch (err) {
+      console.error('❌ Error al cargar productos:', err);
+      const select = document.getElementById('producto');
+      select.innerHTML = '<option value="">⚠️ Error al cargar productos</option>';
+    }
+  }
+
+  window.onload = cargarProductos;
 </script>
 
 </body>
