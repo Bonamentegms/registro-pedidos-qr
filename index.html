@@ -167,10 +167,15 @@
     modal.style.display = "none";
   };
 
-   // 🔄 Cargar productos desde inventario
+  // 🔄 Cargar productos desde inventario
   async function cargarProductos() {
     try {
       const res = await fetch('https://d7d2-186-114-65-91.ngrok-free.app/api/inventario');
+
+      if (!res.headers.get('content-type')?.includes('application/json')) {
+        throw new Error("Respuesta no es JSON válida");
+      }
+
       const productos = await res.json();
 
       const select = document.getElementById('producto');
@@ -184,8 +189,8 @@
       });
     } catch (err) {
       console.error('❌ Error al cargar productos:', err);
-      const select = document.getElementById('producto');
-      select.innerHTML = '<option value="">⚠️ Error al cargar productos</option>';
+      document.getElementById('producto').innerHTML =
+        '<option value="">⚠️ Error al cargar productos</option>';
     }
   }
 
