@@ -167,19 +167,19 @@
     modal.style.display = "none";
   };
 
-  // 🔄 Cargar productos desde la base de datos
+   // 🔄 Cargar productos desde inventario
   async function cargarProductos() {
     try {
       const res = await fetch('https://9a2b-186-114-65-91.ngrok-free.app/api/inventario');
-      const data = await res.json();
+      const productos = await res.json();
 
       const select = document.getElementById('producto');
       select.innerHTML = '<option value="">-- Selecciona --</option>';
 
-      data.forEach(p => {
+      productos.forEach(p => {
         const opt = document.createElement('option');
         opt.value = p.producto;
-        opt.textContent = p.producto;
+        opt.textContent = `${p.producto} - $${Number(p.valor).toLocaleString()}`;
         select.appendChild(opt);
       });
     } catch (err) {
