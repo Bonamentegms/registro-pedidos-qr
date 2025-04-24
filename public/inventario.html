@@ -118,7 +118,7 @@
 
       if (nombre && valor) {
         try {
-          const res = await fetch('https://b21a-179-33-217-227.ngrok-free.app/api/inventario', {
+          const res = await fetch('https://398a-179-33-217-227.ngrok-free.app/api/inventario', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -143,7 +143,7 @@
       try {
         lista.innerHTML = ''; // Limpiar la tabla antes de recargarla
 
-        const res = await fetch('https://b21a-179-33-217-227.ngrok-free.app/api/inventario');
+        const res = await fetch('https://398a-179-33-217-227.ngrok-free.app/api/inventario');
         const datos = await res.json();
 
         datos.forEach(p => {

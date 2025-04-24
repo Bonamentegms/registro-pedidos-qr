@@ -15,9 +15,15 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL
 });
 
-// Permitir todos los orígenes durante desarrollo
-app.use(cors()); // 👈 Permite acceso desde cualquier origen temporalmente
 
+
+app.use(cors({
+  origin: 'https://bonamentegms.github.io',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type'],
+}));
+
+app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
