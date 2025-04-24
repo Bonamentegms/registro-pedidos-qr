@@ -84,7 +84,7 @@
   <script>
     async function cargarInventario() {
       try {
-        const res = await fetch('https://d7d2-186-114-65-91.ngrok-free.app/api/inventario');
+        const res = await fetch('https://b21a-179-33-217-227.ngrok-free.app/api/inventario');
         const datos = await res.json();
 
         const tabla = document.getElementById('tabla-inventario');
@@ -130,7 +130,7 @@
         }
 
         try {
-          const res = await fetch(`https://d7d2-186-114-65-91.ngrok-free.app/api/inventario/${encodeURIComponent(productoOriginal)}`, {
+          const res = await fetch(`https://b21a-179-33-217-227.ngrok-free.app/api/inventario/${encodeURIComponent(productoOriginal)}`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json'
