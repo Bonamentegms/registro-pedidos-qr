@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>📦 Inventario</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f8f9fa;
+      margin: 0;
+      padding: 2em;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      background: #fff;
+      padding: 2em;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 600px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1em;
+      margin-bottom: 1em;
+    }
+
+    input {
+      padding: 0.8em;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 0.8em;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1em;
+    }
+
+    th, td {
+      padding: 0.8em;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f1f1f1;
+    }
+
+    .botones {
+      display: flex;
+      gap: 1em;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📦 Producto</h2>
+    <form id="formulario">
+      <input type="text" id="nombre" placeholder="Nombre del producto" required />
+      <input type="number" id="valor" placeholder="Valor ($)" required />
+      <div class="botones">
+        <button type="submit">Agregar Producto</button>
+        <a href="inventario-listado.html">
+  <button type="button">📄 Lista Producto</button>
+</a>
+
+
+      </div>
+    </form>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Valor ($)</th>
+        </tr>
+      </thead>
+      <tbody id="lista-inventario">
+        <!-- Aquí aparecerán los productos -->
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const form = document.getElementById('formulario');
+    const lista = document.getElementById('lista-inventario');
+
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
+      const nombre = document.getElementById('nombre').value.trim();
+      const valor = document.getElementById('valor').value.trim();
+
+      if (nombre && valor) {
+        try {
+          const res = await fetch('https://d7d2-186-114-65-91.ngrok-free.app/api/inventario', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ producto: nombre, precio: Number(valor) })
+          });
+
+          if (!res.ok) throw new Error('Error al guardar en el inventario');
+
+          const fila = document.createElement('tr');
+          fila.innerHTML = `<td>${nombre}</td><td>$${Number(valor).toLocaleString()}</td>`;
+          lista.appendChild(fila);
+          form.reset();
+        } catch (err) {
+          alert('❌ No se pudo guardar el producto en el inventario.');
+          console.error(err);
+        }
+      }
+    });
+
+    document.getElementById('verInventario').addEventListener('click', async () => {
+      try {
+        lista.innerHTML = ''; // Limpiar la tabla antes de recargarla
+
+        const res = await fetch('https://d7d2-186-114-65-91.ngrok-free.app/api/inventario');
+        const datos = await res.json();
+
+        datos.forEach(p => {
+          const fila = document.createElement('tr');
+          fila.innerHTML = `<td>${p.producto}</td><td>$${Number(p.valor).toLocaleString()}</td>`;
+          lista.appendChild(fila);
+        });
+      } catch (err) {
+        alert('❌ Error al cargar el inventario.');
+        console.error(err);
+      }
+    });
+  </script>
+</body>
+</html>

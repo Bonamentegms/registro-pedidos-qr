@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>📋 Panel de Pedidos</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 2em; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1em; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background-color: #f4f4f4; }
+    input, select, button { margin: 0.5em; padding: 0.4em; }
+    button { cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h2>📋 Panel de Pedidos</h2>
+
+  <div>
+    <label>Desde: <input type="date" id="filtroDesde"></label>
+    <label>Hasta: <input type="date" id="filtroHasta"></label>
+    <label>Cédula: <input type="text" id="filtroCedula"></label>
+    <label>Producto:
+      <select id="filtroProducto">
+        <option value="">Todos</option>
+        <option value="Almuerzo especial empleado">Almuerzo especial empleado</option>
+        <option value="Bandeja especial empleado">Bandeja especial empleado</option>
+        <option value="Almuerzo empleado">Almuerzo empleado</option>
+        <option value="Bandeja empleado">Bandeja empleado</option>
+        <option value="Desayuno empleado">Desayuno empleado</option>
+        <option value="Cena empleado">Cena empleado</option>
+      </select>
+    </label>
+    <label>Entregado:
+      <select id="filtroEntregado">
+        <option value="">Todos</option>
+        <option value="true">Sí</option>
+        <option value="false">No</option>
+      </select>
+    </label>
+    <button onclick="filtrar()">🔍 Filtrar</button>
+    <button onclick="descargarExcel()">⬇️ Descargar Excel</button>
+  </div>
+
+  <table id="tabla">
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Nombre</th>
+        <th>Cédula</th>
+        <th>Producto</th>
+        <th>Precio</th>
+        <th>Entregado</th>
+        <th>Acciones</th>
+        <th>Cantidad</th>
+        <th>Observación</th>
+		<th>Metodo de pago</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    let pedidos = [];
+
+    function cargarDatos() {
+      fetch('/api/pedidos')
+        .then(res => res.json())
+        .then(data => {
+          pedidos = data;
+          filtrar();
+        })
+        .catch(err => console.error("Error al cargar datos:", err));
+    }
+
+    function mostrar(lista) {
+      const cuerpo = document.querySelector('#tabla tbody');
+      cuerpo.innerHTML = '';
+      lista.forEach(p => {
+        const fila = document.createElement('tr');
+        fila.innerHTML = `
+          <td>${new Date(p.fecha).toLocaleString()}</td>
+          <td>${p.nombre}</td>
+          <td>${p.cedula}</td>
+          <td>${p.producto}</td>
+          <td>$${p.precio}</td>
+          <td>${p.entregado ? "✅" : "❌"}</td>
+          <td>
+            ${!p.entregado ? `
+              <button onclick="marcarEntregado('${p.cedula}')">Entregar</button>
+              <button onclick="cancelarPedido('${p.cedula}')">Cancelar</button>
+            ` : ''}
+          </td>
+          <td>${p.cantidad || ''}</td>
+          <td>${p.observacion || ''}</td>
+		  <td>${p.metodo_pago || ''}</td>
+        `;
+        cuerpo.appendChild(fila);
+      });
+    }
+
+    function filtrar() {
+      const cedula = document.getElementById('filtroCedula').value.trim();
+      const producto = document.getElementById('filtroProducto').value;
+      const entregado = document.getElementById('filtroEntregado').value;
+      const desde = document.getElementById('filtroDesde').value;
+      const hasta = document.getElementById('filtroHasta').value;
+
+      const filtrados = pedidos.filter(p => {
+        const fechaPedido = new Date(p.fecha);
+        const desdeFecha = desde ? new Date(desde + 'T00:00:00') : null;
+        const hastaFecha = hasta ? new Date(hasta + 'T23:59:59') : null;
+
+        return (!cedula || p.cedula.includes(cedula)) &&
+               (!producto || p.producto === producto) &&
+               (entregado === "" || String(p.entregado) === entregado) &&
+               (!desdeFecha || fechaPedido >= desdeFecha) &&
+               (!hastaFecha || fechaPedido <= hastaFecha);
+      });
+
+      mostrar(filtrados);
+    }
+
+    function marcarEntregado(cedula) {
+      fetch(`/api/pedido/${cedula}/entregar`)
+        .then(res => {
+          if (res.ok) {
+            alert("✅ Pedido marcado como entregado");
+            cargarDatos();
+          } else {
+            alert("⚠️ No se pudo actualizar el pedido");
+          }
+        })
+        .catch(err => {
+          console.error("Error:", err);
+          alert("❌ Error al marcar como entregado");
+        });
+    }
+
+   function cancelarPedido(cedula) {
+  if (!confirm("¿Estás seguro de cancelar este pedido?")) return;
+
+  fetch(`/api/pedido/${cedula}/cancelar`, {
+    method: "DELETE"
+  })
+  .then(res => {
+    if (res.ok) {
+      alert("🗑️ Pedido cancelado");
+      cargarDatos();
+    } else {
+      alert("⚠️ No se pudo cancelar el pedido");
+    }
+  })
+  .catch(err => {
+    console.error("Error:", err);
+    alert("❌ Error al cancelar el pedido");
+  });
+}
+
+
+    function descargarExcel() {
+      const cedula = document.getElementById('filtroCedula').value.trim();
+      const producto = document.getElementById('filtroProducto').value;
+      const entregado = document.getElementById('filtroEntregado').value;
+      const desde = document.getElementById('filtroDesde').value;
+      const hasta = document.getElementById('filtroHasta').value;
+
+      let url = '/api/pedidos/exportar?';
+      if (cedula) url += `cedula=${encodeURIComponent(cedula)}&`;
+      if (producto) url += `producto=${encodeURIComponent(producto)}&`;
+      if (entregado) url += `entregado=${encodeURIComponent(entregado)}&`;
+      if (desde) url += `desde=${encodeURIComponent(desde)}&`;
+      if (hasta) url += `hasta=${encodeURIComponent(hasta)}&`;
+
+      window.location.href = url;
+    }
+
+    setInterval(cargarDatos, 10000);
+    window.onload = cargarDatos;
+  </script>
+</body>
+</html>

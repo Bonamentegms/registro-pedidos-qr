@@ -1,0 +1,93 @@
+<!-- menu.html actualizado -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>📤Subir Menú del Día</title>
+  <style>
+    body {
+      background: #f0f2f5;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      padding: 2em;
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+    }
+
+    h2 {
+      color: #333;
+      margin-bottom: 1em;
+    }
+
+    input[type="file"] {
+      display: block;
+      margin: 1em auto;
+      font-size: 16px;
+    }
+
+    button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 0.8em 1.5em;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+
+    #estado-subida {
+      margin-top: 1em;
+      font-weight: bold;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>📤 Subir Imagen del Menú del Día</h2>
+
+    <form id="formulario-imagen" enctype="multipart/form-data">
+      <input type="file" name="imagen" accept="image/*" required />
+      <button type="submit">Subir Imagen</button>
+    </form>
+
+    <div id="estado-subida">💡 Sube una imagen del menú que se mostrará en el formulario de pedidos.</div>
+  </div>
+
+  <script>
+    document.getElementById("formulario-imagen").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      const estado = document.getElementById("estado-subida");
+
+      fetch("https://ce60-179-33-217-227.ngrok-free.app/api/menu/imagen", {
+        method: "POST",
+        body: formData,
+      })
+      .then(res => {
+        if (!res.ok) throw new Error("Fallo al subir");
+        estado.textContent = "✅ Imagen subida correctamente.";
+      })
+      .catch(err => {
+        estado.textContent = "❌ Error al subir la imagen.";
+      });
+    });
+  </script>
+</body>
+</html>

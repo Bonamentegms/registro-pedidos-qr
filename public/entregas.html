@@ -1,0 +1,190 @@
+<!-- Cambios realizados:
+  - Se agregó columna "Método de Pago" con lista desplegable
+-->
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>💁‍♂️ Entregas del Día</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 1em;
+      background: #f4f6f8;
+      margin: 0;
+    }
+
+    h2 {
+      text-align: center;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 1em;
+      margin-bottom: 1em;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .card p {
+      margin: 0.3em 0;
+    }
+
+    .acciones {
+      margin-top: 1em;
+      display: flex;
+      gap: 0.5em;
+      flex-wrap: wrap;
+    }
+
+    .acciones button {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .btn-entregar {
+      background-color: #28a745;
+      color: white;
+    }
+
+    .btn-cancelar {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    select {
+      padding: 5px;
+      border-radius: 5px;
+      width: 100%;
+    }
+
+    .metodo {
+      margin-top: 0.5em;
+    }
+
+    .error {
+      color: red;
+      text-align: center;
+      font-weight: bold;
+      margin-top: 1em;
+    }
+  </style>
+</head>
+<body>
+  <h2>📋 Entregas</h2>
+  <div id="contenedor"></div>
+
+  <script>
+    const API_BASE = "https://d7d2-186-114-65-91.ngrok-free.app";
+
+    function cargarDatos() {
+      const params = new URLSearchParams(window.location.search);
+      const cedula = params.get("cedula");
+
+      if (cedula) {
+        fetch(`${API_BASE}/api/pedido/${cedula}`)
+          .then(res => res.json())
+          .then(data => {
+            if (!data || !data.cedula) return mostrarError("❌ No se encontró el pedido.");
+            mostrar([data]);
+          })
+          .catch(err => mostrarError("❌ Error al cargar el pedido."));
+      } else {
+        fetch(`${API_BASE}/api/pedidos`)
+          .then(res => res.json())
+          .then(data => mostrar(data))
+          .catch(err => mostrarError("❌ Error al cargar los pedidos."));
+      }
+    }
+
+    function mostrar(pedidos) {
+      const contenedor = document.getElementById("contenedor");
+      contenedor.innerHTML = '';
+
+      pedidos.forEach(p => {
+        const tarjeta = document.createElement("div");
+        tarjeta.className = "card";
+
+        tarjeta.innerHTML = `
+          <p><strong>📅 Fecha:</strong> ${new Date(p.fecha).toLocaleString()}</p>
+          <p><strong>👤 Nombre:</strong> ${p.nombre}</p>
+          <p><strong>🆔 Cédula:</strong> ${p.cedula}</p>
+          <p><strong>🍽 Producto:</strong> ${p.producto}</p>
+          <p><strong>💲 Precio:</strong> $${p.precio}</p>
+          <p><strong>📦 Entregado:</strong> ${p.entregado ? "✅ Sí" : "❌ No"}</p>
+        `;
+
+        if (!p.entregado) {
+          const metodo = document.createElement("div");
+          metodo.className = "metodo";
+          metodo.innerHTML = `
+            <label><strong>Método de Pago:</strong></label>
+            <select id="metodo-${p.cedula}">
+              <option value="Efectivo">Efectivo</option>
+              <option value="Crédito">Crédito</option>
+            </select>
+          `;
+          tarjeta.appendChild(metodo);
+
+          const acciones = document.createElement("div");
+          acciones.className = "acciones";
+          acciones.innerHTML = `
+            <button class="btn-entregar" onclick="marcarEntregado('${p.cedula}')">Entregar</button>
+            <button class="btn-cancelar" onclick="cancelarPedido('${p.cedula}')">Cancelar</button>
+          `;
+          tarjeta.appendChild(acciones);
+        }
+
+        contenedor.appendChild(tarjeta);
+      });
+    }
+
+    function marcarEntregado(cedula) {
+      const metodo = document.getElementById(`metodo-${cedula}`)?.value || "Efectivo";
+      console.log(`Método de pago para ${cedula}:`, metodo);
+
+      fetch(`${API_BASE}/api/pedido/${cedula}/entregar`)
+        .then(res => {
+          if (res.ok) {
+            alert("✅ Pedido marcado como entregado");
+            cargarDatos();
+          } else {
+            alert("⚠️ No se pudo actualizar el pedido");
+          }
+        })
+        .catch(err => {
+          console.error("Error:", err);
+          alert("❌ Error al marcar como entregado");
+        });
+    }
+
+    function cancelarPedido(cedula) {
+      if (!confirm("¿Estás seguro de cancelar este pedido?")) return;
+
+      fetch(`${API_BASE}/api/pedido/${cedula}/cancelar`, { method: "DELETE" })
+        .then(res => {
+          if (res.ok) {
+            alert("🗑️ Pedido cancelado");
+            cargarDatos();
+          } else {
+            alert("⚠️ No se pudo cancelar el pedido");
+          }
+        })
+        .catch(err => {
+          console.error("Error:", err);
+          alert("❌ Error al cancelar el pedido");
+        });
+    }
+
+    function mostrarError(mensaje) {
+      document.getElementById("contenedor").innerHTML = `<p class="error">${mensaje}</p>`;
+    }
+
+    window.onload = cargarDatos;
+  </script>
+</body>
+</html>

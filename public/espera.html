@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>⏳ Lista de Espera</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f0f2f5;
+      margin: 0;
+      padding: 2em;
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 1em;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 1em;
+      text-align: center;
+      border-bottom: 1px solid #eee;
+      font-size: 15px;
+    }
+
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .retrasado {
+      background-color: #ffe5e5 !important;
+      color: #d10000;
+      font-weight: bold;
+    }
+
+    @media (max-width: 600px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+
+      th {
+        text-align: left;
+        background-color: #007bff;
+        color: white;
+        padding: 10px;
+      }
+
+      td {
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+
+      tr {
+        margin-bottom: 1em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h2>⏳ Lista de Espera de Pedidos</h2>
+
+  <table id="tabla">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Producto</th>
+		<th>Observacion</th>
+		<th>Cantidad</th>
+        <th>Tiempo de Espera</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    let temporizadores = {};
+
+    function cargarPedidos() {
+      fetch('/api/pedidos')
+        .then(res => res.json())
+        .then(data => {
+          const hoy = new Date();
+          const pedidosHoy = data.filter(p => {
+            const fecha = new Date(p.fecha);
+            return (
+              !p.entregado &&
+              fecha.getFullYear() === hoy.getFullYear() &&
+              fecha.getMonth() === hoy.getMonth() &&
+              fecha.getDate() === hoy.getDate()
+            );
+          });
+
+          mostrar(pedidosHoy);
+        })
+        .catch(err => console.error("Error al cargar pedidos:", err));
+    }
+
+    function mostrar(pedidos) {
+      const cuerpo = document.querySelector('#tabla tbody');
+      cuerpo.innerHTML = '';
+
+      pedidos.forEach(p => {
+        const tr = document.createElement('tr');
+        const fechaPedido = new Date(p.fecha);
+        const id = `${p.cedula}-${p.producto}`;
+        
+        tr.innerHTML = `
+          <td>${p.nombre}</td>
+          <td>${p.producto}</td>
+		  <td>${p.observacion}</td>
+		  <td>${p.cantidad}</td>
+          <td id="cronometro-${id}">00:00</td>
+        `;
+
+        cuerpo.appendChild(tr);
+
+        // Inicializa temporizador si no existe
+        if (!temporizadores[id]) {
+          temporizadores[id] = setInterval(() => {
+            const ahora = new Date();
+            const diff = Math.floor((ahora - fechaPedido) / 1000);
+            const minutos = Math.floor(diff / 60).toString().padStart(2, '0');
+            const segundos = (diff % 60).toString().padStart(2, '0');
+            const tiempo = `${minutos}:${segundos}`;
+            const cronometro = document.getElementById(`cronometro-${id}`);
+            if (cronometro) {
+              cronometro.textContent = tiempo;
+              const fila = cronometro.closest('tr');
+              if (diff >= 300) {
+                fila.classList.add('retrasado');
+              }
+            }
+          }, 1000);
+        }
+      });
+    }
+
+    setInterval(cargarPedidos, 10000);
+    window.onload = cargarPedidos;
+  </script>
+</body>
+</html>

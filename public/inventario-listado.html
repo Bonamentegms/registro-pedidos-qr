@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>📦 Listado de Productos</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f8f9fa;
+      padding: 2em;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h2 {
+      margin-bottom: 1em;
+    }
+
+    table {
+      width: 100%;
+      max-width: 800px;
+      border-collapse: collapse;
+      background: white;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      padding: 0.8em;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f1f1f1;
+    }
+
+    .btn-volver {
+      margin-top: 1em;
+      padding: 0.8em 1.2em;
+      background-color: #6c757d;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .btn-volver:hover {
+      background-color: #5a6268;
+    }
+
+    button.editar {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 0.4em 0.8em;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button.editar:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h2>📦 Listado de Productos</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Producto</th>
+        <th>Valor ($)</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody id="tabla-inventario">
+      <!-- Productos se insertan aquí -->
+    </tbody>
+  </table>
+
+  <button class="btn-volver" onclick="volver()">↩️ Volver</button>
+
+  <script>
+    async function cargarInventario() {
+      try {
+        const res = await fetch('https://d7d2-186-114-65-91.ngrok-free.app/api/inventario');
+        const datos = await res.json();
+
+        const tabla = document.getElementById('tabla-inventario');
+        tabla.innerHTML = '';
+
+        datos.forEach(p => {
+          const fila = document.createElement('tr');
+
+          fila.innerHTML = `
+            <td contenteditable="false" data-original="${p.producto}">${p.producto}</td>
+            <td contenteditable="false">${p.valor}</td>
+            <td>
+              <button class="editar" onclick="editarFila(this)">✏️ Editar</button>
+            </td>
+          `;
+
+          tabla.appendChild(fila);
+        });
+      } catch (error) {
+        alert('❌ No se pudo cargar el inventario');
+        console.error(error);
+      }
+    }
+
+    async function editarFila(btn) {
+      const fila = btn.closest('tr');
+      const celdas = fila.querySelectorAll('td');
+      const productoOriginal = celdas[0].getAttribute('data-original') || celdas[0].textContent.trim();
+
+      if (btn.textContent.includes('✏️')) {
+        celdas[0].contentEditable = true;
+        celdas[1].contentEditable = true;
+        celdas[0].style.backgroundColor = '#fff7d1';
+        celdas[1].style.backgroundColor = '#fff7d1';
+        btn.textContent = '💾 Guardar';
+      } else {
+        const producto = celdas[0].textContent.trim();
+        const valor = parseFloat(celdas[1].textContent.trim());
+
+        if (!producto || isNaN(valor)) {
+          alert('❌ Nombre o valor inválido');
+          return;
+        }
+
+        try {
+          const res = await fetch(`https://d7d2-186-114-65-91.ngrok-free.app/api/inventario/${encodeURIComponent(productoOriginal)}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ producto, valor })
+          });
+
+          const data = await res.json();
+          console.log('🔁 Respuesta backend:', data);
+
+          if (!res.ok) throw new Error(data.error || 'Error al actualizar');
+
+          celdas[0].contentEditable = false;
+          celdas[1].contentEditable = false;
+          celdas[0].style.backgroundColor = '';
+          celdas[1].style.backgroundColor = '';
+          celdas[0].setAttribute('data-original', producto);
+          btn.textContent = '✏️ Editar';
+        } catch (error) {
+          alert('❌ No se pudo actualizar el producto');
+          console.error('Error:', error);
+        }
+      }
+    }
+
+    function volver() {
+      window.location.href = 'inventario.html';
+    }
+
+    window.onload = cargarInventario;
+  </script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!-- src/admin.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Panel de Pedidos</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 2em; }
+    table { border-collapse: collapse; width: 100%; margin-top: 1em; }
+    th, td { border: 1px solid #ccc; padding: 0.5em; text-align: center; }
+    th { background-color: #f2f2f2; }
+    input, select {
+      margin-right: 1em;
+      padding: 0.5em;
+    }
+  </style>
+</head>
+<body>
+  <h2>📋 Pedidos Registrados</h2>
+
+  <div>
+    <input type="text" id="filtroNombre" placeholder="Filtrar por nombre">
+    <input type="text" id="filtroCedula" placeholder="Filtrar por cédula">
+    <select id="filtroEntregado">
+      <option value="">Todos</option>
+      <option value="true">Entregados</option>
+      <option value="false">No entregados</option>
+    </select>
+    <button onclick="descargarExcel()">⬇️ Descargar Excel</button>
+  </div>
+
+  <table id="tablaPedidos">
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Nombre</th>
+        <th>Cédula</th>
+        <th>Producto</th>
+        <th>Precio</th>
+        <th>Entregado</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    let todosLosPedidos = [];
+
+    function cargarPedidos() {
+      fetch('/api/pedidos')
+        .then(res => res.json())
+        .then(data => {
+          todosLosPedidos = data;
+          renderTabla(data);
+        });
+    }
+
+    function renderTabla(pedidos) {
+      const tbody = document.querySelector("#tablaPedidos tbody");
+      tbody.innerHTML = "";
+      pedidos.forEach(p => {
+        const fila = document.createElement("tr");
+        fila.innerHTML = `
+          <td>${new Date(p.fecha).toLocaleString()}</td>
+          <td>${p.nombre}</td>
+          <td>${p.cedula}</td>
+          <td>${p.producto}</td>
+          <td>$${p.precio}</td>
+          <td>${p.entregado ? "✅" : "❌"}</td>
+        `;
+        tbody.appendChild(fila);
+      });
+    }
+
+    function aplicarFiltros() {
+      const nombre = document.getElementById("filtroNombre").value.toLowerCase();
+      const cedula = document.getElementById("filtroCedula").value;
+      const entregado = document.getElementById("filtroEntregado").value;
+
+      const filtrado = todosLosPedidos.filter(p => {
+        return (
+          p.nombre.toLowerCase().includes(nombre) &&
+          p.cedula.includes(cedula) &&
+          (entregado === "" || String(p.entregado) === entregado)
+        );
+      });
+
+      renderTabla(filtrado);
+    }
+
+    function descargarExcel() {
+      const tabla = document.getElementById("tablaPedidos");
+      let csv = [];
+      for (let row of tabla.rows) {
+        const cols = Array.from(row.cells).map(cell => `"${cell.innerText}"`);
+        csv.push(cols.join(","));
+      }
+      const blob = new Blob([csv.join("\n")], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "pedidos.csv";
+      a.click();
+    }
+
+    // Eventos
+    document.getElementById("filtroNombre").addEventListener("input", aplicarFiltros);
+    document.getElementById("filtroCedula").addEventListener("input", aplicarFiltros);
+    document.getElementById("filtroEntregado").addEventListener("change", aplicarFiltros);
+
+    cargarPedidos();
+  </script>
+</body>
+</html>
