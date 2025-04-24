@@ -170,7 +170,7 @@
   // 🔄 Cargar productos desde inventario
   async function cargarProductos() {
     try {
-      const res = await fetch('https://d7d2-186-114-65-91.ngrok-free.app/api/inventario');
+      const res = await fetch('https://398a-179-33-217-227.ngrok-free.app/api/inventario');
 
       if (!res.headers.get('content-type')?.includes('application/json')) {
         throw new Error("Respuesta no es JSON válida");
