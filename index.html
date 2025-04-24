@@ -172,11 +172,12 @@
     try {
       const res = await fetch('https://9ac4-186-114-65-91.ngrok-free.app/api/inventario');
 
-      if (!res.headers.get('content-type')?.includes('application/json')) {
+      /*if (!res.headers.get('content-type')?.includes('application/json')) {
         throw new Error("Respuesta no es JSON válida");
-      }
+      }*/
 
       const productos = await res.json();
+      console.log({productos})
 
       const select = document.getElementById('producto');
       select.innerHTML = '<option value="">-- Selecciona --</option>';
